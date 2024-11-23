@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="quiz-container">
+    <div class="progress-bar" id="progress-bar"></div>
+    <h2 id="question">Question text</h2>
+    <ul class="answer-options">
+        <li><button class="option" onclick="selectAnswer(0)">Answer 1</button></li>
+        <li><button class="option" onclick="selectAnswer(1)">Answer 2</button></li>
+        <li><button class="option" onclick="selectAnswer(2)">Answer 3</button></li>
+        <li><button class="option" onclick="selectAnswer(3)">Answer 4</button></li>
+    </ul>
+    <div class="feedback" id="feedback"></div>
+    <div class="timer" id="timer">10s</div>
+    <button id="next-btn" onclick="nextQuestion()">Next</button>
+</div>
+
+<div class="score-container" id="score-container">
+    <h2>Your Score: <span id="score">0</span>/<span id="total-questions">0</span></h2>
+    <button onclick="restartQuiz()">Restart Quiz</button>
+</div>
+
+<script>
+    const questions = [
+        {
+            question: "What is the capital of India?",
+            answers: ["Mumbai", "Punjab", "Delhi", "Chennai"],
+            correctAnswer: 2
+        },
+        {
+            question: "Which planet is known as the Red Planet?",
+            answers: ["Earth", "Mars", "Jupiter", "Saturn"],
+            correctAnswer: 1
+        },
+        {
+            question: "Who is the current PM of India?",
+            answers: ["Narendra Modi", "Rahul Gandhi", "Amit Shah", "Sharad Pawar"],
+            correctAnswer: 0
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timerInterval;
+    const timeLimit = 10;
+
+    function loadQuestion() {
+        resetTimer();
+        const question = questions[currentQuestionIndex];
+        document.getElementById('question').innerText = question.question;
+        const options = document.querySelectorAll('.option');
+        options.forEach((option, index) => {
+            option.innerText = question.answers[index];
+            option.classList.remove('correct', 'incorrect');
+            option.disabled = false;
+        });
+        updateProgressBar();
+    }
+
+    function selectAnswer(selectedIndex) {
+        clearInterval(timerInterval);
+        const question = questions[currentQuestionIndex];
+        const options = document.querySelectorAll('.option');
+        const feedback = document.getElementById('feedback');
+        
+        if (selectedIndex === question.correctAnswer) {
+            score++;
+            options[selectedIndex].classList.add('correct');
+            feedback.innerText = "Correct!";
+            feedback.classList.add('correct-feedback');
+        } else {
+            options[selectedIndex].classList.add('incorrect');
+            options[question.correctAnswer].classList.add('correct');
+            feedback.innerText = "Incorrect!";
+            feedback.classList.add('incorrect-feedback');
+        }
+
+        feedback.style.display = 'block';
+        options.forEach(option => option.disabled = true);
+        document.getElementById('next-btn').style.display = 'block';
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        document.getElementById('feedback').style.display = 'none';
+        if (currentQuestionIndex < questions.length) {
+            loadQuestion();
+            document.getElementById('next-btn').style.display = 'none';
+        } else {
+            showScore();
+        }
+    }
+
+    function showScore() {
+        document.querySelector('.quiz-container').style.display = 'none';
+        document.getElementById('score-container').style.display = 'block';
+        document.getElementById('score').innerText = score;
+        document.getElementById('total-questions').innerText = questions.length;
+    }
+
+    function restartQuiz() {
+        score = 0;
+        currentQuestionIndex = 0;
+        document.querySelector('.quiz-container').style.display = 'block';
+        document.getElementById('score-container').style.display = 'none';
+        loadQuestion();
+    }
+
+    function updateProgressBar() {
+        const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+        document.getElementById('progress-bar').style.width = `${progress}%`;
+    }
+
+    function startTimer() {
+        let timeLeft = timeLimit;
+        document.getElementById('timer').innerText = `${timeLeft}s`;
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').innerText = `${timeLeft}s`;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById('next-btn').style.display = 'block';
+            }
+        }, 1000);
+    }
+
+    function resetTimer() {
+        clearInterval(timerInterval);
+        startTimer();
+    }
+
+    loadQuestion();
+</script>
+
+</body>
+</html>
